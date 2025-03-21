@@ -34,13 +34,19 @@ test.describe('Update Personal Info', () => {
             await page.goto(CommonData.applicationUrl, { waitUntil: 'domcontentloaded' });
         });
 
+
+
         // Login as Employee, upload certificate, and submit
         await test.step('Login as Employee', async () => {
             await loginpage.filltheform(qaloginEmp.uname, qaloginEmp.pwd);
         });
 
+
+
+
+        // Navigate to the certification section
         await test.step('Navigate to Personal Info - Upload Certificate - Submit', async () => {
-            // Navigate to the certification section
+
             await loginpage.navigateToCertification();
 
             // Add a new certificate
@@ -60,8 +66,8 @@ test.describe('Update Personal Info', () => {
         // Assertions - Validate success message
         await test.step('Validate success message for new record', async () => {
 
-            const successMessage = await page.locator('div').filter({ hasText: 'Your request was recorded.' }).nth(2);
-            await expect(successMessage).toBeVisible();
+            const successMessage1 = await page.locator('div').filter({ hasText: 'Your request was recorded.' }).nth(2);
+            await expect(successMessage1).toBeVisible();
             // const informMessage = page.locator('span').filter({ hasText: 'Your request is in the process of being validated.' }).nth(2);
             // await expect(informMessage).toBeVisible();
 
@@ -94,7 +100,20 @@ test.describe('Update Personal Info', () => {
             await page.locator('#my-tasks-menu').click();
             await hrPage.getTableCell(1, 2); // Call the method on the instance
             await hrPage.clickTableCell(1, 1);
+
+
+
             await hrPage.ClickonApprovebtn();
+        });
+
+        // Assertions - Validate success message for approval
+        await test.step('Validate success message for new record', async () => {
+
+            const successMessage2 = await page.locator('div').filter({ hasText: 'You successfully completed the task.' }).nth(2);
+            await expect(successMessage2).toBeVisible();
+            // const informMessage = page.locator('span').filter({ hasText: 'Your request is in the process of being validated.' }).nth(2);
+            // await expect(informMessage).toBeVisible();
+
         });
 
     });
