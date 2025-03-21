@@ -1,18 +1,26 @@
 import { test, Page, expect } from '@playwright/test';
-import { loginPageEmp } from '../Pages/loginPageEmp';
+import { loginPage } from '../Pages/loginPage';
+import { HrPage } from '../Pages/HrPage';
+import { EmpPage } from '../Pages/EmpPage';
 import { CommonData } from '../test-data/common-data';
 import { LoginEmp, LoginHr, LoginMan } from '../test-data/login-data';
 
 test.describe('Update Personal Info', () => {
     let page: Page;
-    let loginpage: loginPageEmp;
+    let loginpage: loginPage;
+    let hrPage: HrPage;
+    let empPage: EmpPage;
+
+
     const qaloginEmp = LoginEmp.QA;
     const qaloginHr = LoginHr.QA;
     const qaloginMan = LoginMan.QA;
 
     test.beforeEach(async ({ browser }) => {
         page = await browser.newPage();
-        loginpage = new loginPageEmp(page);
+        loginpage = new loginPage(page);
+        hrPage = new HrPage(page);
+        empPage = new EmpPage(page);
     });
 
     test.afterEach(async () => {
@@ -36,6 +44,7 @@ test.describe('Update Personal Info', () => {
             await loginpage.navigateToCertification();
 
             // Add a new certificate
+            //await page.locator('span:has-text("Add")').click();
             await page.getByRole('button', { name: ' Add' }).click();
             await page.locator('ng-select span').first().click();
             await page.getByRole('link', { name: 'Certification 1 (Driving' }).click();
@@ -48,33 +57,45 @@ test.describe('Update Personal Info', () => {
             await page.getByRole('button', { name: 'Submit' }).click();
         });
 
+        // Assertions - Validate success message
         await test.step('Validate success message for new record', async () => {
-            // Validate success message
+
             const successMessage = await page.locator('div').filter({ hasText: 'Your request was recorded.' }).nth(2);
             await expect(successMessage).toBeVisible();
+            // const informMessage = page.locator('span').filter({ hasText: 'Your request is in the process of being validated.' }).nth(2);
+            // await expect(informMessage).toBeVisible();
+
         });
 
         // Signing out as Employee after record creation
         await test.step('Sign out as Employee', async () => {
-            await page.locator('.nav-link.dropdown-toggle').click();
-            await page.locator('a:has-text("Sign Out")').click(); // Updated locator for "Sign Out"
+            await empPage.signOutasEmp();
+
         });
 
-        // Verify login page is displayed
+        // Assertion - Verify login page is displayed
         await test.step('Validate that user has been redirected to login page after sign out', async () => {
             await expect(page.locator('#kc-page-title')).toHaveText('Sign in to your account'); // Corrected locator
         });
+
+
 
         // Signing in as HR after Employee submission
         await test.step('Sign in as HR', async () => {
             await loginpage.filltheform(qaloginHr.uname, qaloginHr.pwd);
 
-            // Navigate to the HR dashboard or tasks
-            await page.locator('#hr-menu').click();
-            await page.locator('#hr-tasks-menu').click();
-
-            // Validate that HR dashboard is displayed
-            await expect(page.locator('h1')).toHaveText('HR Dashboard');
         });
+
+
+
+        // Navigate to the HR tasks and approve request
+        await test.step('Approve request as HR Manager', async () => {
+
+            await page.locator('#my-tasks-menu').click();
+            await hrPage.getTableCell(1, 2); // Call the method on the instance
+            await hrPage.clickTableCell(1, 1);
+            await hrPage.ClickonApprovebtn();
+        });
+
     });
 });

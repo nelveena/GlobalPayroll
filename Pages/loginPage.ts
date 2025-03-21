@@ -1,7 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 
 
-export class loginPageEmp {
+export class loginPage {
     private page: Page;
 
     //login
