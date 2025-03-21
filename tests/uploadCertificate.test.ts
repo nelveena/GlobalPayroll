@@ -1,116 +1,80 @@
 import { test, Page, expect } from '@playwright/test';
-import { loginPage } from '../Pages/loginPage';
+import { loginPageEmp } from '../Pages/loginPageEmp';
 import { CommonData } from '../test-data/common-data';
 import { LoginEmp, LoginHr, LoginMan } from '../test-data/login-data';
 
-
 test.describe('Update Personal Info', () => {
-
-    let page: Page; //creating a variable page
-    let loginpage: loginPage;
+    let page: Page;
+    let loginpage: loginPageEmp;
     const qaloginEmp = LoginEmp.QA;
-    const qaloginHr = LoginEmp.QA;
-    const qaloginMan = LoginEmp.QA;
+    const qaloginHr = LoginHr.QA;
+    const qaloginMan = LoginMan.QA;
 
     test.beforeEach(async ({ browser }) => {
         page = await browser.newPage();
-        loginpage = new loginPage(page);
-
+        loginpage = new loginPageEmp(page);
     });
 
     test.afterEach(async () => {
         await page.close();
-
     });
 
-    test('Successful Test - Upload certifate', async () => {
+    test('Successful Test - Upload certificate', async () => {
+        test.setTimeout(60000); // Set timeout to 60 seconds for this test
 
         await test.step('Open browser and navigate to website', async () => {
             await page.goto(CommonData.applicationUrl, { waitUntil: 'domcontentloaded' });
-
         });
 
-        //Login as Employee, upload certificate and submit
-        await test.step('Login as Emp', async () => {
+        // Login as Employee, upload certificate, and submit
+        await test.step('Login as Employee', async () => {
+            await loginpage.filltheform(qaloginEmp.uname, qaloginEmp.pwd);
+        });
 
-            await loginpage.filltheform(
-                qaloginEmp.uname,
-                qaloginEmp.pwd,
+        await test.step('Navigate to Personal Info - Upload Certificate - Submit', async () => {
+            // Navigate to the certification section
+            await loginpage.navigateToCertification();
 
-            );
+            // Add a new certificate
+            await page.getByRole('button', { name: ' Add' }).click();
+            await page.locator('ng-select span').first().click();
+            await page.getByRole('link', { name: 'Certification 1 (Driving' }).click();
 
-            await test.step('Navigate to Personal info - upload certificate - submit', async () => {
-                //Navigate to education section
-                await page.locator('#ess-menu').click();
-                await page.locator('#ess-personal-info-menu').click();
-                await page.locator('a').filter({ hasText: 'Education' }).click();
-                await page.getByText('Certifications', { exact: true }).click();
+            // Upload the certificate file
+            const filePath = 'c:\\HR People Update\\test-data\\certificate.jpg'; // Ensure the file path is correct
+            await page.getByRole('textbox', { name: ' Choose or drop a file' }).setInputFiles(filePath);
 
-                //Add new certificate
-                await page.getByRole('button', { name: ' Add' }).click();
-                await page.locator('ng-select span').first().click();
-                await page.getByRole('link', { name: 'Certification 1 (Driving' }).click();
+            // Submit the form
+            await page.getByRole('button', { name: 'Submit' }).click();
+        });
 
-                // Upload the certificate file
-                const filePath = 'c:\\HR People Update\\test-data\\certificationGP.jpg'; // Ensure the file path is correct
-                await page.getByRole('textbox', { name: ' Choose or drop a file' }).setInputFiles(filePath);
+        await test.step('Validate success message for new record', async () => {
+            // Validate success message
+            const successMessage = await page.locator('div').filter({ hasText: 'Your request was recorded.' }).nth(2);
+            await expect(successMessage).toBeVisible();
+        });
 
-                // Submit the form
-                await page.getByRole('button', { name: 'Submit' }).click();
+        // Signing out as Employee after record creation
+        await test.step('Sign out as Employee', async () => {
+            await page.locator('.nav-link.dropdown-toggle').click();
+            await page.locator('a:has-text("Sign Out")').click(); // Updated locator for "Sign Out"
+        });
 
-                // Validate success message
-                const successMessage = await page.locator('div').filter({ hasText: 'Your request was recorded.' }).nth(2);
-                await expect(successMessage).toBeVisible();
+        // Verify login page is displayed
+        await test.step('Validate that user has been redirected to login page after sign out', async () => {
+            await expect(page.locator('#kc-page-title')).toHaveText('Sign in to your account'); // Corrected locator
+        });
 
-                const validationMessage = await page.locator('div').filter({ hasText: /^Your request is in the process of being validated\.$/ });
-                await expect(validationMessage).toBeVisible();
+        // Signing in as HR after Employee submission
+        await test.step('Sign in as HR', async () => {
+            await loginpage.filltheform(qaloginHr.uname, qaloginHr.pwd);
 
+            // Navigate to the HR dashboard or tasks
+            await page.locator('#hr-menu').click();
+            await page.locator('#hr-tasks-menu').click();
 
-                // await page.getByRole('button', { name: 'Submit' }).click();
-                //assertion for record submitted successfully 
-                // (#toast-container)
-                // await page.locator('div').filter({ hasText: 'Your request was recorded.' }).nth(2).click();
-                // await page.locator('div').filter({ hasText: /^Your request is in the process of being validated\.$/ }).click();
-
-
-
-            });
-
-            // await test.step('', async () => {
-
-
-            // });
-
-
-            // //Login as Manager, approve changes
-            // await test.step('Login as Manager', async () => {
-
-            //     await loginpage.filltheform(
-            //         qaloginMan.uname,
-            //         qaloginMan.pwd,
-
-            //     );
-
-            //     await test.step('Navigate to my task', async () => {
-
-
-            //     });
-
-
-            // });
-
-
+            // Validate that HR dashboard is displayed
+            await expect(page.locator('h1')).toHaveText('HR Dashboard');
         });
     });
-
-
-
-
-
-
-
-
-
-
-
 });
