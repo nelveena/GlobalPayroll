@@ -5,6 +5,7 @@ export class HrPage {
     private page: Page;
     private approvebtn: Locator;
     private signoutbtn: Locator;
+    private declinebtn: Locator;
 
 
 
@@ -12,6 +13,7 @@ export class HrPage {
     constructor(page: Page) {
         this.page = page;
         this.approvebtn = page.locator("button[test-id='Approve']");
+        this.declinebtn = page.locator("//button[@type='button' and @class='btn primary p-x-md' and @test-id='Decline']");
         this.signoutbtn = page.locator('.dropdown-item.user-sign-out'); // Corrected locator
 
     }
@@ -32,6 +34,10 @@ export class HrPage {
 
     async ClickonApprovebtn() {
         await this.approvebtn.click()
+
+    }
+    async ClickonDeclinebtn() {
+        await this.declinebtn.click()
 
     }
     async signOutHr() {
