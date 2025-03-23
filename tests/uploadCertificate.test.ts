@@ -29,7 +29,9 @@ test.describe('Update Personal Info', () => {
         await page.close();
     });
 
-    test('Successful Test - Upload certificate - Approve request', async () => {
+    //Positive test where request is approved
+
+    test('Positive Test - Upload certificate - Approve request', async () => {
         test.setTimeout(240000); // Set timeout to 240 seconds for this test
 
         // Step 1: Open browser and navigate to the website
@@ -52,7 +54,7 @@ test.describe('Update Personal Info', () => {
 
             //2.2 Upload the certificate file
             const filePath = 'c:\\HR People Update\\test-data\\certificate.jpg'; // Ensure the file path is correct
-            await page.getByRole('textbox', { name: ' Choose or drop a file' }).setInputFiles(filePath);
+            await page.getByRole('textbox', { name: /Choose or drop a file/i }).setInputFiles(filePath);
 
             //2.3 Submit the form
             await page.getByRole('button', { name: 'Submit' }).click();
@@ -157,9 +159,9 @@ test.describe('Update Personal Info', () => {
     });
 
 
-    // Successful test where request is declined
+    //Positive test where request is declined
 
-    test('Successful Test - Upload certificate - Decline request', async () => {
+    test('Positive Test - Upload certificate - Decline request', async () => {
         test.setTimeout(240000); // Set timeout to 240 seconds for this test
 
         // Step 1: Open browser and navigate to the website
@@ -205,12 +207,12 @@ test.describe('Update Personal Info', () => {
         });
 
 
-
         // Step 6: Sign in as HR
         await test.step('Sign in as HR', async () => {
             await loginpage.filltheform(qaloginHr.uname, qaloginHr.pwd);
         });
-        //---------------------------------------------------
+
+
         // Step 7: Decline request as HR Manager
         await test.step('Decline request as HR Manager', async () => {
             await page.waitForSelector('#my-tasks-menu'); // Wait for the menu to be visible
@@ -279,17 +281,63 @@ test.describe('Update Personal Info', () => {
             await expect(notifMsg).toBeVisible();
         });
 
-        //step 17 : Sign Out as Employee
+        //step 18 : Sign Out as Employee
         await test.step('Sign out as Employee', async () => {
             await empPage.signOutasEmp();
         });
 
-        //step 18 : Validate redirection to login page
+        //step 19 : Validate redirection to login page
         await test.step('Validate that user has been redirected to login page after sign out', async () => {
             await expect(page.locator('#kc-page-title')).toHaveText('Sign in to your account');
         });
 
 
     });
+
+    //Negative test
+
+    test('Negative Test - Upload certificate with invalid format - ', async () => {
+        test.setTimeout(240000); // Set timeout to 240 seconds for this test
+
+        // Step 1: Open browser and navigate to the website
+        await test.step('Open browser and navigate to website', async () => {
+            await page.goto(CommonData.applicationUrl, { waitUntil: 'domcontentloaded' });
+        });
+
+        // Step 2: Login as Employee, upload certificate, and submit
+        await test.step('Login as Employee', async () => {
+            await loginpage.filltheform(qaloginEmp.uname, qaloginEmp.pwd);
+        });
+
+        await test.step('Navigate to Personal Info - Upload Certificate - Submit', async () => {
+            await loginpage.navigateToCertification();
+
+            //2.1 Add a new certificate
+            await page.getByRole('button', { name: ' Add' }).click();
+            await page.locator('ng-select span').first().click();
+            await page.getByRole('link', { name: 'Certification 1 (Driving' }).click();
+
+            //2.2 Upload the certificate file
+            const filePath = 'c:\\HR People Update\\test-data\\API Testing Using Postman Material.pdf'; // Ensure the file path is correct
+            await page.getByRole('textbox', { name: ' Choose or drop a file' }).setInputFiles(filePath);
+
+            //2.3 Submit the form
+            await page.getByRole('button', { name: 'Submit' }).click();
+        });
+
+        // Step 4: Validate error message for invalid file format
+        await test.step('Validate error message for invalid file format', async () => {
+            const errorMessage = await page.locator('div').filter({ hasText: 'Invalid file format. Please upload a valid image file.' });
+            await expect(errorMessage).toBeVisible(); // Ensure the error message is displayed
+        });
+
+        // Step 5: Ensure the form is not submitted
+        await test.step('Ensure the form is not submitted', async () => {
+            const successMessage = await page.locator('div').filter({ hasText: 'Your request was recorded.' });
+            await expect(successMessage).not.toBeVisible(); // Ensure no success message is displayed
+        });
+
+    });
+
 
 });
