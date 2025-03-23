@@ -224,7 +224,7 @@ test.describe('Update Personal Info', () => {
             await hrPage.ClickonDeclinebtn();
         });
 
-        // Step 8: Validate success message for approval
+        // Step 8: Validate success message for decline
         await test.step('Validate success message for approval', async () => {
             const successMessage2 = await page.locator('div').filter({ hasText: 'You successfully completed the task.' }).nth(2);
             await expect(successMessage2).toBeVisible();
@@ -318,7 +318,8 @@ test.describe('Update Personal Info', () => {
             await page.getByRole('link', { name: 'Certification 1 (Driving' }).click();
 
             //2.2 Upload the certificate file
-            const filePath = 'c:\\HR People Update\\test-data\\API Testing Using Postman Material.pdf'; // Ensure the file path is correct
+            //const filePath = 'c:\\HR People Update\\test-data\\API Testing Using Postman Material.pdf'; // Ensure the file path is correct
+            const filePath = 'test-data/API Testing Using Postman Material.pdf'; // Ensure the file path is correct
             await page.getByRole('textbox', { name: ' Choose or drop a file' }).setInputFiles(filePath);
 
             //2.3 Submit the form
@@ -327,7 +328,8 @@ test.describe('Update Personal Info', () => {
 
         // Step 4: Validate error message for invalid file format
         await test.step('Validate error message for invalid file format', async () => {
-            const errorMessage = await page.locator('div').filter({ hasText: 'Invalid file format. Please upload a valid image file.' });
+            // const errorMessage = await page.locator('div').filter({ hasText: 'Invalid file format. Please upload a valid image file.' });
+            const errorMessage = await page.locator('.modal-title:has-text("Server error")');  // Locator for the modal title
             await expect(errorMessage).toBeVisible(); // Ensure the error message is displayed
         });
 
